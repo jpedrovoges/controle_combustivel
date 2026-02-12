@@ -1,0 +1,159 @@
+<odoo>
+    <record id="view_abastecimento_list" model="ir.ui.view">
+        <field name="name">controle.abastecimento.list</field>
+        <field name="model">controle.abastecimento</field>
+        <field name="arch" type="xml">
+            <list string="Abastecimentos">
+                <field name="data_abastecimento"/>
+                <field name="caminhao_id"/>
+                <field name="placa_veiculo"/>
+                <field name="motorista_id"/>
+                <field name="quantidade_litros" sum="Total Litros"/>
+                <field name="valor_total" sum="Valor Total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_abastecimento_form" model="ir.ui.view">
+        <field name="name">controle.abastecimento.form</field>
+        <field name="model">controle.abastecimento</field>
+        <field name="arch" type="xml">
+            <form string="Registro de Abastecimento">
+                <sheet>
+                    <group>
+                        <group string="Veículo">
+                            <field name="caminhao_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="placa_veiculo"/>
+                            <field name="odometro_anterior" style="color: blue; font-weight: bold;"/>
+                            <field name="odometro" placeholder="Deve ser maior que o anterior"/>
+                        </group>
+                        <group string="Responsável e Data">
+                            <field name="data_abastecimento" readonly="1" force_save="1"/>
+                            <field name="motorista_id" readonly="1" force_save="1"/>
+                        </group>
+                    </group>
+                    <group string="Valores">
+                        <group>
+                            <field name="quantidade_litros"/>
+                            <field name="valor_litro"/>
+                        </group>
+                        <group>
+                            <field name="valor_total" widget="monetary"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_tanque_list" model="ir.ui.view">
+        <field name="name">controle.tanque.list</field>
+        <field name="model">controle.tanque</field>
+        <field name="arch" type="xml">
+            <list decoration-info="estoque_atual > 1000" decoration-danger="estoque_atual &lt; 500">
+                <field name="name"/>
+                <field name="capacidade_max"/>
+                <field name="estoque_atual" widget="progressbar"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_tanque_form" model="ir.ui.view">
+        <field name="name">controle.tanque.form</field>
+        <field name="model">controle.tanque</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_entrada_combustivel" 
+                            string="Registrar Entrada" 
+                            type="object" 
+                            class="oe_highlight" 
+                            groups="controle_combustivel.group_combustivel_manager"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="estoque_atual" readonly="1"/>
+                        <field name="capacidade_max"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_tanque_entrada_wizard_form" model="ir.ui.view">
+        <field name="name">controle.tanque.entrada.wizard.form</field>
+        <field name="model">controle.tanque.entrada.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="quantidade_entrada"/>
+                </group>
+                <footer>
+                    <button name="action_confirmar_entrada" string="Confirmar Entrada" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_abastecimento" model="ir.actions.act_window">
+        <field name="name">Abastecimentos</field>
+        <field name="res_model">controle.abastecimento</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_caminhao" model="ir.actions.act_window">
+        <field name="name">Caminhões da Frota</field>
+        <field name="res_model">controle.caminhao</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_tanque" model="ir.actions.act_window">
+        <field name="name">Tanques</field>
+        <field name="res_model">controle.tanque</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_combustivel_root" 
+              name="Controle de Combustível" 
+              action="action_abastecimento"
+              web_icon="base,static/description/icon.png"
+              sequence="1"/>
+
+    <menuitem id="menu_abastecimento_motorista" 
+              name="Registrar Abastecimento" 
+              parent="menu_combustivel_root" 
+              action="action_abastecimento" 
+              sequence="10"/>
+
+    <menuitem id="menu_gerencia_tanque" 
+              name="Gestão" 
+              parent="menu_combustivel_root" 
+              groups="controle_combustivel.group_combustivel_manager" 
+              sequence="20"/>
+
+    <menuitem id="menu_gerente_parametros_tanque" 
+              name="Parâmetros do Tanque" 
+              parent="menu_gerencia_tanque" 
+              action="action_tanque" 
+              sequence="10"/>
+
+    <menuitem id="menu_caminhao" 
+              name="Frota de Caminhões" 
+              parent="menu_gerencia_tanque" 
+              action="action_caminhao" 
+              sequence="20"/>
+
+    <menuitem id="menu_combustivel_admin_root" 
+              name="Configurações Admin" 
+              parent="menu_combustivel_root" 
+              groups="base.group_system" 
+              sequence="100"/>
+
+    <menuitem id="menu_admin_usuarios" 
+              name="Gerenciar Usuários" 
+              parent="menu_combustivel_admin_root" 
+              action="base.action_res_users" 
+              sequence="20"/>
+</odoo>

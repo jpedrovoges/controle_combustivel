@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_abastecimento_user,abast_user,model_controle_abastecimento,group_combustivel_user,1,1,1,0
+access_abastecimento_manager,abast_manager,model_controle_abastecimento,group_combustivel_manager,1,1,1,1
+access_tanque_manager,tanque_manager,model_controle_tanque,group_combustivel_manager,1,1,1,1
+access_tanque_user,tanque_user,model_controle_tanque,group_combustivel_user,1,0,0,0
+access_caminhao_manager,caminhao_manager,model_controle_caminhao,group_combustivel_manager,1,1,1,1
+access_caminhao_user,caminhao_user,model_controle_caminhao,group_combustivel_user,1,0,0,0

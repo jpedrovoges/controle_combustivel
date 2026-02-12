@@ -1,7 +1,7 @@
 {
     'name': 'controle_combustivel',
     'version': '1.0',
-    'author': 'Seu Nome',
+    'author': 'jpedrovoges',
     'license': 'LGPL-3',
     'category': 'Inventory',
     'depends': ['base'],

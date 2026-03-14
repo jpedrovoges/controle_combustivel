@@ -1,0 +1,19 @@
+/* 
+   Correção de CSS para a tela de Login
+   Caminho: static/src/css/login_fix.css
+*/
+
+/* Garante que o card de login tenha um fundo branco e sombra, caso esteja transparente */
+.oe_login_form {
+    background-color: #ffffff !important;
+    padding: 30px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
+}
+
+/* Ajuste opcional para o fundo da página */
+body.o_web_client {
+    background-color: #f0f2f5;
+}

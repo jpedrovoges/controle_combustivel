@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_abast_motorista,abast.motorista,model_controle_combustivel_abastecimento,group_controle_motorista,1,1,1,0
+access_abast_analista,abast.analista,model_controle_combustivel_abastecimento,group_controle_analista,1,1,1,0
+access_abast_admin,abast.admin,model_controle_combustivel_abastecimento,group_controle_admin,1,1,1,1
+access_tanque_motorista,tanque.motorista,model_controle_tanque,group_controle_motorista,1,0,0,0
+access_tanque_analista,tanque.analista,model_controle_tanque,group_controle_analista,1,1,1,0
+access_tanque_admin,tanque.admin,model_controle_tanque,group_controle_admin,1,1,1,1
+access_caminhao_motorista,caminhao.motorista,model_controle_caminhao,group_controle_motorista,1,0,0,0
+access_caminhao_analista,caminhao.analista,model_controle_caminhao,group_controle_analista,1,1,1,0
+access_caminhao_admin,caminhao.admin,model_controle_caminhao,group_controle_admin,1,1,1,1
+access_wizard_analista,wizard.analista,model_controle_tanque_entrada_wizard,group_controle_analista,1,1,1,0
+access_wizard_admin,wizard.admin,model_controle_tanque_entrada_wizard,group_controle_admin,1,1,1,1
+access_movimento_motorista,movimento.motorista,model_controle_tanque_movimento,group_controle_motorista,1,0,0,0
+access_movimento_analista,movimento.analista,model_controle_tanque_movimento,group_controle_analista,1,0,0,0
+access_movimento_admin,movimento.admin,model_controle_tanque_movimento,group_controle_admin,1,1,1,1

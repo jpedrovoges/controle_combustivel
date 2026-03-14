@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_caminhao_list" model="ir.ui.view">
+        <field name="name">controle.caminhao.list</field>
+        <field name="model">controle.caminhao</field>
+        <field name="arch" type="xml">
+            <list string="Frota" decoration-danger="not disponivel">
+                <field name="name"/>
+                <field name="placa"/>
+                <field name="tipo_veiculo"/>
+                <field name="disponivel" widget="boolean_toggle"/> </list>
+        </field>
+    </record>
+
+    <record id="view_abastecimento_list" model="ir.ui.view">
+        <field name="name">controle.combustivel.abastecimento.list</field>
+        <field name="model">controle.combustivel.abastecimento</field>
+        <field name="arch" type="xml">
+            <list string="Abastecimentos" decoration-muted="state == 'cancel'">
+                <field name="data_abastecimento"/>
+                <field name="caminhao_id"/>
+                <field name="placa_veiculo"/>
+                <field name="motorista_id"/>
+                <field name="quantidade_litros" sum="Total Litros"/>
+                <field name="valor_total" sum="Valor Total"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_abastecimento_form" model="ir.ui.view">
+        <field name="name">controle.combustivel.abastecimento.form</field>
+        <field name="model">controle.combustivel.abastecimento</field>
+        <field name="arch" type="xml">
+            <form string="Registro de Abastecimento">
+                <header>
+                    <button name="action_estorno" 
+                            string="Estornar Abastecimento" 
+                            type="object" 
+                            class="btn-danger" 
+                            groups="controle_combustivel.group_controle_analista,controle_combustivel.group_controle_admin"
+                            invisible="state == 'cancel'"
+                            confirm="Tem certeza que deseja estornar este abastecimento? O combustível retornará ao estoque do tanque e as medições do veículo poderão ser revertidas."/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <field name="id" invisible="1"/>
+                    <group>
+                        <group string="Veículo">
+                            <field name="caminhao_id" options="{'no_create': True}" readonly="id"/>
+                            
+                            <field name="tipo_veiculo" invisible="1"/> 
+                            <field name="placa_veiculo" readonly="1"/>
+                        </group>
+                        <group string="Medição Atual">
+                            <field name="ultimo_odometro" invisible="tipo_veiculo != 'caminhao'"/>
+                            <field name="ultimo_horimetro" invisible="tipo_veiculo != 'empilhadeira'"/>
+                            
+                            <separator string="Nova Medição"/>
+                            
+                            <field name="odometro" options="{'type': 'number'}" inputmode="numeric" invisible="tipo_veiculo != 'caminhao'" required="tipo_veiculo == 'caminhao'" readonly="id"/>
+                            <field name="horimetro" options="{'type': 'number'}" inputmode="decimal" invisible="tipo_veiculo != 'empilhadeira'" required="tipo_veiculo == 'empilhadeira'" readonly="id"/>
+                        </group>
+                    </group>
+                    <group string="Dados do Abastecimento">
+                        <group>
+                            <field name="tanque_id" readonly="id"/>
+                            <field name="quantidade_litros" options="{'type': 'number'}" inputmode="decimal" readonly="id"/>
+                            <field name="valor_litro" options="{'type': 'number'}" inputmode="decimal" readonly="id"/>
+                            <field name="valor_total" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="motorista_id" readonly="1"/>
+                            <field name="data_abastecimento" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_abastecimento_search" model="ir.ui.view">
+        <field name="name">controle.combustivel.abastecimento.search</field>
+        <field name="model">controle.combustivel.abastecimento</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="caminhao_id" string="Veículo/Equipamento"/>
+                <field name="motorista_id"/>
+                <field name="tanque_id"/>
+                <field name="placa_veiculo"/>
+                
+                <separator/>
+                
+                <filter string="Hoje" name="hoje" 
+                        domain="[('data_abastecimento', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Esta Semana" name="esta_semana" 
+                        domain="[('data_abastecimento', '&gt;=', (context_today() + relativedelta(weeks=-1, days=1, weekday=0)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Este Mês" name="este_mes" 
+                        domain="[('data_abastecimento', '&gt;=', context_today().strftime('%Y-%m-01'))]"/>
+                
+                <separator/>
+
+                <filter string="Meus Abastecimentos" name="meus_abastecimentos" domain="[('motorista_id', '=', uid)]"/>
+                <filter string="Caminhões" name="tipo_caminhao" domain="[('tipo_veiculo', '=', 'caminhao')]"/>
+                <filter string="Empilhadeiras" name="tipo_empilhadeira" domain="[('tipo_veiculo', '=', 'empilhadeira')]"/>
+                
+                <separator/>
+                
+                <filter string="Confirmados" name="filter_done" domain="[('state', '=', 'done')]"/>
+                <filter string="Estornados" name="filter_cancel" domain="[('state', '=', 'cancel')]"/>
+
+                <separator/>
+                <filter string="Veículo" name="group_by_caminhao" context="{'group_by': 'caminhao_id'}"/>
+                <filter string="Motorista" name="group_by_motorista" context="{'group_by': 'motorista_id'}"/>
+                <filter string="Tanque" name="group_by_tanque" context="{'group_by': 'tanque_id'}"/>
+                <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                <filter string="Data" name="group_by_data" context="{'group_by': 'data_abastecimento'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_tanque_list" model="ir.ui.view">
+        <field name="name">controle.tanque.list</field>
+        <field name="model">controle.tanque</field>
+        <field name="arch" type="xml">
+            <list string="Tanques">
+                <field name="name"/>
+                <field name="capacidade_max"/>
+                <field name="estoque_atual" widget="progressbar"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_tanque_form" model="ir.ui.view">
+        <field name="name">controle.tanque.form</field>
+        <field name="model">controle.tanque</field>
+        <field name="arch" type="xml">
+            <form string="Gestão do Tanque">
+                <header>
+                    <button name="action_entrada_combustivel" string="Adicionar Diesel" type="object" class="oe_highlight" 
+                            groups="controle_combustivel.group_controle_analista,controle_combustivel.group_controle_admin"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" readonly="1"/>
+                        <field name="capacidade_max" readonly="1"/>
+                        <field name="estoque_atual" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Extrato de Movimentações">
+                            <field name="movimento_ids" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_tanque_movimento_list" model="ir.ui.view">
+        <field name="name">controle.tanque.movimento.list</field>
+        <field name="model">controle.tanque.movimento</field>
+        <field name="arch" type="xml">
+            <list string="Movimentações" export_xlsx="1">
+                <field name="data"/>
+                <field name="tipo"/>
+                <field name="quantidade" sum="Total Litros"/>
+                <field name="origem"/>
+                <field name="usuario_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_tanque_entrada_wizard_form" model="ir.ui.view">
+        <field name="name">controle.tanque.entrada.wizard.form</field>
+        <field name="model">controle.tanque.entrada.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Recarregar Tanque">
+                <group>
+                    <field name="quantidade_entrada" inputmode="decimal"/>
+                </group>
+                <footer>
+                    <button name="action_confirmar_entrada" string="Confirmar Entrada" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_abastecimento" model="ir.actions.act_window">
+        <field name="name">Abastecimentos</field>
+        <field name="res_model">controle.combustivel.abastecimento</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_abastecimento_search"/>
+        <field name="context">{
+            'search_default_filter_done': 1,
+            'search_default_este_mes': 1
+        }</field>
+    </record>
+
+    <record id="action_tanque" model="ir.actions.act_window">
+        <field name="name">Tanques</field>
+        <field name="res_model">controle.tanque</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_tanque_list"/>
+    </record>
+
+    <record id="action_caminhao" model="ir.actions.act_window">
+        <field name="name">Frota de Veículos</field>
+        <field name="res_model">controle.caminhao</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_movimentos_estoque_geral" model="ir.actions.act_window">
+        <field name="name">Movimentações de Estoque</field>
+        <field name="res_model">controle.tanque.movimento</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_tanque_movimento_list"/>
+    </record>
+
+    <menuitem id="menu_combustivel_root" name="Controle de Combustível" sequence="1"/>
+    
+    <menuitem id="menu_abastecimento_lista" name="Histórico e Registro" parent="menu_combustivel_root" action="action_abastecimento" sequence="10"/>
+    
+    <menuitem id="menu_gerencia_tanque" name="Gestão e Frota" parent="menu_combustivel_root" groups="group_controle_analista,group_controle_admin" sequence="20"/>
+    <menuitem id="menu_analista_parametros_tanque" name="Tanques" parent="menu_gerencia_tanque" action="action_tanque" sequence="10"/>
+    <menuitem id="menu_caminhao_sub" name="Frota de Veículos" parent="menu_gerencia_tanque" action="action_caminhao" sequence="20"/>
+    <menuitem id="menu_movimentos_estoque_unico" name="Movimentações (Planilha)" parent="menu_gerencia_tanque" action="action_movimentos_estoque_geral" sequence="30"/>
+
+    <menuitem id="menu_combustivel_admin_root" name="Configurações Admin" parent="menu_combustivel_root" groups="group_controle_admin,base.group_system" sequence="100"/>
+    <menuitem id="menu_admin_usuarios" name="Gerenciar Usuários" parent="menu_combustivel_admin_root" action="base.action_res_users" sequence="10"/>
+</odoo>

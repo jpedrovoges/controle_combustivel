@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="group_controle_motorista" model="res.groups">
+            <field name="name">Motorista</field>
+        </record>
+
+        <record id="group_controle_analista" model="res.groups">
+            <field name="name">Analista</field>
+            <field name="implied_ids" eval="[(4, ref('group_controle_motorista'))]"/>
+        </record>
+
+        <record id="group_controle_admin" model="res.groups">
+            <field name="name">Administrador do Módulo</field>
+            <field name="implied_ids" eval="[(4, ref('group_controle_analista'))]"/>
+        </record>
+
+        <record id="base.group_system" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('group_controle_admin'))]"/>
+        </record>
+
+        <record id="rule_abastecimento_motorista" model="ir.rule">
+            <field name="name">Motorista: Ver apenas seus abastecimentos</field>
+            <field name="model_id" ref="model_controle_combustivel_abastecimento"/>
+            <field name="domain_force">[('motorista_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_controle_motorista'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_abastecimento_analista_admin" model="ir.rule">
+            <field name="name">Analista/Admin: Ver todos os abastecimentos</field>
+            <field name="model_id" ref="model_controle_combustivel_abastecimento"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_controle_analista')), (4, ref('group_controle_admin'))]"/>
+        </record>
+    </data>
+</odoo>

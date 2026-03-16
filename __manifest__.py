@@ -10,6 +10,11 @@
         'security/ir.model.access.csv',
         'views/views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'controle_combustivel/static/src/js/abastecimento_handler.js',
+        ]
+    },
     'installable': True,
     'application': True,
 }

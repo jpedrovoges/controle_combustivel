@@ -67,7 +67,7 @@
                         <group>
                             <field name="tanque_id" readonly="id"/>
                             <field name="quantidade_litros" options="{'type': 'number'}" inputmode="decimal" readonly="id"/>
-                            <field name="valor_litro" options="{'type': 'number'}" inputmode="decimal" readonly="id"/>
+                            <field name="valor_litro" readonly="1" force_save="1"/>
                             <field name="valor_total" readonly="1"/>
                         </group>
                         <group>
@@ -146,6 +146,7 @@
                         <field name="name" readonly="1"/>
                         <field name="capacidade_max" readonly="1"/>
                         <field name="estoque_atual" readonly="1"/>
+                        <field name="valor_litro" groups="controle_combustivel.group_controle_analista,controle_combustivel.group_controle_admin"/>
                     </group>
                     <notebook>
                         <page string="Extrato de Movimentações">
@@ -191,11 +192,7 @@
         <field name="name">Abastecimentos</field>
         <field name="res_model">controle.combustivel.abastecimento</field>
         <field name="view_mode">list,form</field>
-        <field name="search_view_id" ref="view_abastecimento_search"/>
-        <field name="context">{
-            'search_default_filter_done': 1,
-            'search_default_este_mes': 1
-        }</field>
+        <field name="target">current</field>
     </record>
 
     <record id="action_tanque" model="ir.actions.act_window">
@@ -209,6 +206,37 @@
         <field name="name">Frota de Veículos</field>
         <field name="res_model">controle.caminhao</field>
         <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_caminhao_form" model="ir.ui.view">
+    <field name="name">controle.caminhao.form</field>
+    <field name="model">controle.caminhao</field>
+    <field name="arch" type="xml">
+        <form string="Veículo">
+            <sheet>
+                <group>
+                    <group string="Identificação">
+                        <field name="name"/>
+                        <field name="placa"/>
+                        <field name="tipo_veiculo"/>
+                        <field name="disponivel" widget="boolean_toggle"/>
+                    </group>
+                    <group string="Dados Técnicos">
+                        <field name="odometro_inicial" invisible="tipo_veiculo != 'caminhao'"/>
+                        <field name="horimetro_inicial" invisible="tipo_veiculo != 'empilhadeira'"/>
+                        <field name="capacidade_tanque"/>
+                    </group>
+                </group>
+                <group string="Configuração de QR Code">
+                    <label for="qr_link" string="URL para QRCode"/>
+                    <div class="o_row">
+                        <field name="qr_link" widget="url" readonly="1"/>
+                            <span class="text-muted">(Use este link para gerar o QR Code deste veículo)</span>
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
     </record>
 
     <record id="action_movimentos_estoque_geral" model="ir.actions.act_window">

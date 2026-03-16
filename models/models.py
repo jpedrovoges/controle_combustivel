@@ -1,4 +1,6 @@
-from odoo import models, fields, api, _
+import urllib.parse
+from odoo import models, fields, api, _, http
+from odoo.http import request
 from odoo.exceptions import ValidationError
 
 class TanqueMovimento(models.Model):
@@ -25,6 +27,7 @@ class TanqueCombustivel(models.Model):
 
     name = fields.Char(string="Tanque", default="Principal (6.000L)", required=True)
     capacidade_max = fields.Float(string="Capacidade Máxima", default=6000.0)
+    valor_litro = fields.Float(string="Preço por Litro (R$)", default=0.0)
     
     # 1. ADICIONE A RELAÇÃO COM OS MOVIMENTOS
     movimento_ids = fields.One2many('controle.tanque.movimento', 'tanque_id', string="Movimentações")
@@ -119,12 +122,8 @@ class ControleCaminhao(models.Model):
     def _compute_qr_link(self):
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         for record in self:
-            if record.placa:
-                # Gera o link usando a placa como parâmetro
-                placa_limpa = urllib.parse.quote(record.placa)
-                record.qr_link = f"{base_url}/fill/fuel?placa={placa_limpa}"
-            else:
-                record.qr_link = False
+            # Link limpo que o Odoo não vai "limpar"
+            record.qr_link = f"{base_url}/abastecer/{record.id}"
 
     @api.depends('name', 'placa')
     def _compute_display_name(self):
@@ -134,16 +133,45 @@ class ControleCaminhao(models.Model):
 class ControleAbastecimento(models.Model):
     _name = 'controle.combustivel.abastecimento'
     _description = 'Registros de Abastecimento'
+    
+    valor_litro = fields.Float(string="Valor por Litro", readonly=True, store=True)
+
+    @api.onchange('tanque_id')
+    def _onchange_tanque_id(self):
+        if self.tanque_id:
+            self.valor_litro = self.tanque_id.valor_litro
+    
 
     @api.model
     def _get_default_tanque(self):
         tanque = self.env['controle.tanque'].search([], limit=1)
         return tanque.id if tanque else False
 
-    tanque_id = fields.Many2one('controle.tanque', string="Tanque", required=True, default=_get_default_tanque)
-    caminhao_id = fields.Many2one('controle.caminhao', string="Veículo", required=True, domain=[('disponivel', '=', True)])
-    motorista_id = fields.Many2one('res.users', string="Motorista", default=lambda self: self.env.user)
+    @api.model
+    def default_get(self, fields_list):
+        res = super(ControleAbastecimento, self).default_get(fields_list)
+        
+        # Verificamos se existe uma requisição web ativa antes de ler a sessão
+        if request and request.session.get('qr_veiculo_id'):
+            qr_id = request.session.get('qr_veiculo_id')
+            res.update({'caminhao_id': int(qr_id)})
+            
+            # Limpa para o próximo não vir preenchido errado
+            request.session.pop('qr_veiculo_id', None)
+            
+        return res
+
+    # Mantenha os campos como estavam, mas pode simplificar o caminhao_id
+    tanque_id = fields.Many2one('controle.tanque', string="Tanque", required=True, default=lambda self: self.env['controle.tanque'].search([], limit=1).id)
     
+    caminhao_id = fields.Many2one(
+        'controle.caminhao', 
+        string="Veículo", 
+        required=True, 
+        domain=[('disponivel', '=', True)]
+    )
+    
+    motorista_id = fields.Many2one('res.users', string="Motorista", default=lambda self: self.env.user)
     quantidade_litros = fields.Float(string="Litros Abastecidos", required=True)
     data_abastecimento = fields.Datetime(string="Data e Hora", default=fields.Datetime.now)
     
@@ -160,7 +188,6 @@ class ControleAbastecimento(models.Model):
     ultimo_odometro = fields.Float(string="Último Odômetro Registrado", readonly=True)
     ultimo_horimetro = fields.Float(string="Último Horímetro Registrado", readonly=True)
 
-    valor_litro = fields.Float(string="Valor por Litro")
     valor_total = fields.Float(string="Total", compute="_compute_total", store=True)
 
     @api.onchange('caminhao_id')

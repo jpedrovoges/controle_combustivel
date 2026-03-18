@@ -8,5 +8,5 @@ class AbastecimentoController(http.Controller):
         request.session['qr_veiculo_id'] = veiculo_id
         
         action = request.env.ref('controle_combustivel.action_abastecimento')
-        # Redireciona para o formulário padrão (agora a URL pode ser limpa à vontade)
+        # Redireciona para o formulário padrão
         return request.redirect(f"/odoo/action-{action.id}/new")

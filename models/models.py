@@ -29,7 +29,6 @@ class TanqueCombustivel(models.Model):
     capacidade_max = fields.Float(string="Capacidade Máxima", default=6000.0)
     valor_litro = fields.Float(string="Preço por Litro (R$)", default=0.0)
     
-    # 1. ADICIONE A RELAÇÃO COM OS MOVIMENTOS
     movimento_ids = fields.One2many('controle.tanque.movimento', 'tanque_id', string="Movimentações")
 
     estoque_atual = fields.Float(
@@ -39,7 +38,7 @@ class TanqueCombustivel(models.Model):
         help="Saldo calculado automaticamente através do histórico de entradas e saídas."
     )
 
-    # 2. FUNÇÃO QUE SOMA AS ENTRADAS E SUBTRAI AS SAÍDAS
+    # Função que soma as entrada e subtrai as saídas
     @api.depends('movimento_ids.quantidade', 'movimento_ids.tipo')
     def _compute_estoque(self):
         for tanque in self:
@@ -56,7 +55,7 @@ class TanqueCombustivel(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'controle.tanque.entrada.wizard',
             'view_mode': 'form',
-            'target': 'new', # Abre como um pop-up
+            'target': 'new',
             }
     
     @api.constrains('estoque_atual', 'capacidade_max')
@@ -122,7 +121,6 @@ class ControleCaminhao(models.Model):
     def _compute_qr_link(self):
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         for record in self:
-            # Link limpo que o Odoo não vai "limpar"
             record.qr_link = f"{base_url}/abastecer/{record.id}"
 
     @api.depends('name', 'placa')
@@ -151,7 +149,6 @@ class ControleAbastecimento(models.Model):
     def default_get(self, fields_list):
         res = super(ControleAbastecimento, self).default_get(fields_list)
         
-        # Verificamos se existe uma requisição web ativa antes de ler a sessão
         if request and request.session.get('qr_veiculo_id'):
             qr_id = request.session.get('qr_veiculo_id')
             res.update({'caminhao_id': int(qr_id)})
@@ -160,8 +157,7 @@ class ControleAbastecimento(models.Model):
             request.session.pop('qr_veiculo_id', None)
             
         return res
-
-    # Mantenha os campos como estavam, mas pode simplificar o caminhao_id
+    
     tanque_id = fields.Many2one('controle.tanque', string="Tanque", required=True, default=lambda self: self.env['controle.tanque'].search([], limit=1).id)
     
     caminhao_id = fields.Many2one(
@@ -199,7 +195,7 @@ class ControleAbastecimento(models.Model):
             self.ultimo_odometro = 0.0
             self.ultimo_horimetro = 0.0
 
-    # 2. TRAVA DE SEGURANÇA: IMPEDE KM/HORA MENOR QUE A ANTERIOR
+    # Trava de Segurança: Impede KM/Hora menor que a anterior
     @api.constrains('odometro', 'horimetro', 'caminhao_id')
     def _check_medicao_progressiva(self):
         for record in self:
